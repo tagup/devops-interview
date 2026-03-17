@@ -1,5 +1,29 @@
 from celery import Celery
+from celery.signals import task_postrun, task_prerun
+from celery.utils.log import get_task_logger
 from kombu import Exchange, Queue
+
+
+logger = get_task_logger(__name__)
+
+
+def _task_name(sender) -> str:
+    """Resolve a human-friendly task name for signal callbacks."""
+    if hasattr(sender, "name") and sender.name:
+        return sender.name
+    if isinstance(sender, str):
+        return sender
+    return "unknown"
+
+
+@task_prerun.connect(weak=False)
+def announce_task_start(sender=None, task_id=None, **_: object) -> None:
+    logger.info("Task %s (%s) starting", _task_name(sender), task_id)
+
+
+@task_postrun.connect(weak=False)
+def announce_task_finish(sender=None, task_id=None, state=None, **_: object) -> None:
+    logger.info("Task %s (%s) finished with state %s", _task_name(sender), task_id, state)
 
 
 def create_celery_app() -> Celery:
