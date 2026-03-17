@@ -20,5 +20,5 @@
       "version": "latest"
     }
   },
-  "postCreateCommand": "cat .devcontainer/.bashrc.sh >> $HOME/.bashrc"
+  "postCreateCommand": "bash .devcontainer/post-create.sh"
 }
